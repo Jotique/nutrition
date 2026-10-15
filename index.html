@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calorías basales y macros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF4EF; --panel:#FFFFFF; --ink:#12261F; --muted:#5A6E65; --line:#D3DFD6;
+  --accent:#B8305A; --accent-ink:#FFFFFF; --sage:#5F8F6B; --soft:#E2EDE5;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1B16; --panel:#172620; --ink:#E7F0EA; --muted:#98ADA2; --line:#2A3D34;
+    --accent:#E0658A; --accent-ink:#1A0A10; --sage:#8DBF99; --soft:#1F3229; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1B16; --panel:#172620; --ink:#E7F0EA; --muted:#98ADA2; --line:#2A3D34;
+  --accent:#E0658A; --accent-ink:#1A0A10; --sage:#8DBF99; --soft:#1F3229; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--body)}
+.wrap{max-width:980px;margin:0 auto;padding:32px 20px 56px}
+h1{font:800 clamp(1.9rem,5vw,3rem)/1.05 var(--display);margin:0 0 8px;letter-spacing:-.02em}
+.lead{color:var(--muted);max-width:60ch;margin:0 0 28px}
+.grid{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:20px;align-items:start}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.panel h2{font:700 1.15rem/1.2 var(--display);margin:0 0 14px}
+label{display:block;font-weight:500;font-size:.92rem;margin:14px 0 5px}
+input,select{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;font:inherit;font-weight:500;padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.hint{font-size:.82rem;color:var(--muted);margin:4px 0 0}
+.big{font:800 clamp(3.2rem,9vw,5.2rem)/1 var(--display);color:var(--accent);letter-spacing:-.03em;margin:0}
+.big small{font:500 1rem var(--body);color:var(--muted);letter-spacing:0;margin-left:6px}
+.sub{color:var(--muted);margin:6px 0 0}
+.stack{display:flex;flex-direction:column;gap:20px}
+.pair{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.pair:first-of-type{border-top:0}
+.pair b{font:700 1.1rem var(--display)}
+.bar{display:flex;height:14px;border-radius:7px;overflow:hidden;margin:14px 0 10px;background:var(--soft)}
+.bar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.warn{background:var(--soft);border-left:4px solid var(--accent);padding:10px 14px;border-radius:6px;font-size:.9rem;margin-top:14px}
+.foot{font-size:.82rem;color:var(--muted);margin-top:24px;max-width:70ch}
+.empty{color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Calorías basales y macros</h1>
+  <p class="lead">Introduce tus datos y la página calcula cuánta energía gasta tu cuerpo en reposo, cuánto gastas al día con tu actividad y cómo repartir las calorías según tu objetivo.</p>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="t-datos">
+      <h2 id="t-datos">Tus datos</h2>
+
+      <label id="l-sexo">Sexo</label>
+      <div class="seg" role="group" aria-labelledby="l-sexo">
+        <button type="button" data-sex="m" aria-pressed="true">Hombre</button>
+        <button type="button" data-sex="f" aria-pressed="false">Mujer</button>
+      </div>
+
+      <div class="row">
+        <div><label for="edad">Edad</label><input id="edad" type="number" min="14" max="100" inputmode="numeric" value="22"></div>
+        <div><label for="peso">Peso (kg)</label><input id="peso" type="number" min="30" max="250" step="0.1" inputmode="decimal" value="75"></div>
+        <div><label for="altura">Altura (cm)</label><input id="altura" type="number" min="120" max="230" inputmode="numeric" value="178"></div>
+      </div>
+
+      <label for="grasa">% de grasa corporal (opcional)</label>
+      <input id="grasa" type="number" min="3" max="60" step="0.1" inputmode="decimal" placeholder="Déjalo vacío si no lo sabes">
+      <p class="hint">Si lo rellenas, se usa la fórmula de Katch-McArdle, más precisa en personas con mucha masa muscular.</p>
+
+      <label for="actividad">Nivel de actividad</label>
+      <select id="actividad">
+        <option value="1.2">Sedentario: poco o nada de ejercicio</option>
+        <option value="1.375">Ligero: 1 a 3 días por semana</option>
+        <option value="1.55" selected>Moderado: 3 a 5 días por semana</option>
+        <option value="1.725">Alto: 6 a 7 días por semana</option>
+        <option value="1.9">Muy alto: doble sesión o trabajo físico</option>
+      </select>
+
+      <label for="objetivo">Objetivo</label>
+      <select id="objetivo">
+        <option value="-0.2">Perder grasa (−20 %)</option>
+        <option value="-0.1">Perder grasa suave (−10 %)</option>
+        <option value="0" selected>Mantener peso</option>
+        <option value="0.1">Ganar músculo (+10 %)</option>
+      </select>
+
+      <label for="prot">Proteína (g por kg de peso)</label>
+      <select id="prot">
+        <option value="1.4">1,4: actividad general</option>
+        <option value="1.8" selected>1,8: entrenamiento regular</option>
+        <option value="2.2">2,2: déficit o hipertrofia exigente</option>
+      </select>
+    </section>
+
+    <div class="stack">
+      <section class="panel" aria-labelledby="t-bmr" aria-live="polite">
+        <h2 id="t-bmr">Metabolismo basal</h2>
+        <p class="big"><span id="bmr">—</span><small>kcal/día</small></p>
+        <p class="sub" id="metodo"></p>
+        <div id="pares"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="t-macros">
+        <h2 id="t-macros">Reparto de macros</h2>
+        <div id="macros" class="empty">Rellena los datos para ver el reparto.</div>
+      </section>
+    </div>
+  </div>
+
+  <p class="foot">Las fórmulas son estimaciones con un margen de error de alrededor del 10 %. Úsalas como punto de partida, ajusta según cómo evolucione tu peso en 2 o 3 semanas y consulta a un dietista-nutricionista si tienes una condición médica o un objetivo clínico.</p>
+</main>
+
+<script>
+(function(){
+  var KEY="calc-nutricion-v1";
+  var sex="m";
+  var $=function(id){return document.getElementById(id)};
+  var ids=["edad","peso","altura","grasa","actividad","objetivo","prot"];
+
+  function save(){
+    try{
+      var d={sex:sex};
+      ids.forEach(function(i){d[i]=$(i).value});
+      localStorage.setItem(KEY,JSON.stringify(d));
+    }catch(e){}
+  }
+  function load(){
+    try{
+      var raw=localStorage.getItem(KEY);
+      if(!raw) return;
+      var d=JSON.parse(raw);
+      if(d.sex) sex=d.sex;
+      ids.forEach(function(i){ if(d[i]!==undefined) $(i).value=d[i]; });
+    }catch(e){}
+  }
+  function paintSex(){
+    document.querySelectorAll("[data-sex]").forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.sex===sex ? "true":"false");
+    });
+  }
+  var nf=new Intl.NumberFormat("es-ES",{maximumFractionDigits:0});
+  function n(x){return nf.format(Math.round(x))}
+
+  function calc(){
+    var edad=parseFloat($("edad").value), peso=parseFloat($("peso").value), alt=parseFloat($("altura").value);
+    var grasa=parseFloat($("grasa").value);
+    var act=parseFloat($("actividad").value), obj=parseFloat($("objetivo").value), prot=parseFloat($("prot").value);
+    if(!(edad>0&&peso>0&&alt>0)){
+      $("bmr").textContent="—"; $("metodo").textContent=""; $("pares").innerHTML="";
+      $("macros").className="empty"; $("macros").textContent="Rellena edad, peso y altura para ver el resultado.";
+      return;
+    }
+    var bmr, metodo;
+    if(grasa>0 && grasa<60){
+      var lbm=peso*(1-grasa/100);
+      bmr=370+21.6*lbm;
+      metodo="Katch-McArdle, con tu masa libre de grasa de "+lbm.toFixed(1).replace(".",",")+" kg.";
+    }else{
+      bmr=10*peso+6.25*alt-5*edad+(sex==="m"?5:-161);
+      metodo="Mifflin-St Jeor, la fórmula más usada con peso, altura y edad.";
+    }
+    var tdee=bmr*act;
+    var target=tdee*(1+obj);
+
+    $("bmr").textContent=n(bmr);
+    $("metodo").textContent=metodo;
+    $("pares").innerHTML=
+      '<div class="pair"><span>Gasto diario total con tu actividad</span><b>'+n(tdee)+' kcal</b></div>'+
+      '<div class="pair"><span>Calorías objetivo</span><b>'+n(target)+' kcal</b></div>';
+
+    var pG=prot*peso, pK=pG*4;
+    var fK=target*0.25, fG=fK/9;
+    var cK=Math.max(target-pK-fK,0), cG=cK/4;
+    var tot=pK+fK+cK||1;
+    var pp=pK/tot*100, fp=fK/tot*100, cp=cK/tot*100;
+
+    var html=
+      '<div class="bar" role="img" aria-label="Proteína '+n(pp)+'%, grasa '+n(fp)+'%, hidratos '+n(cp)+'%">'+
+        '<span style="width:'+pp+'%;background:var(--accent)"></span>'+
+        '<span style="width:'+fp+'%;background:var(--ink)"></span>'+
+        '<span style="width:'+cp+'%;background:var(--sage)"></span></div>'+
+      '<div class="legend">'+
+        '<span><i class="dot" style="background:var(--accent)"></i>Proteína '+n(pG)+' g</span>'+
+        '<span><i class="dot" style="background:var(--ink)"></i>Grasa '+n(fG)+' g</span>'+
+        '<span><i class="dot" style="background:var(--sage)"></i>Hidratos '+n(cG)+' g</span></div>'+
+      '<p class="sub">La proteína sale de tu peso, la grasa es el 25 % de las calorías y los hidratos completan el resto.</p>';
+    if(target<bmr){
+      html+='<div class="warn">Tu objetivo queda por debajo de tu metabolismo basal. Un déficit así es difícil de sostener y conviene vigilarlo con un profesional.</div>';
+    }
+    $("macros").className=""; $("macros").innerHTML=html;
+  }
+
+  document.querySelectorAll("[data-sex]").forEach(function(b){
+    b.addEventListener("click",function(){sex=b.dataset.sex;paintSex();calc();save();});
+  });
+  ids.forEach(function(i){
+    $(i).addEventListener("input",function(){calc();save();});
+    $(i).addEventListener("change",function(){calc();save();});
+  });
+  load(); paintSex(); calc();
+})();
+</script>
+</body>
+</html>
